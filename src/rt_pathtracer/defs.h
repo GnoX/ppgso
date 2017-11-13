@@ -1,6 +1,8 @@
 #ifndef PPGSO_DEFS_H
 #define PPGSO_DEFS_H
 
+#include "stb_image.h"
+
 #include <limits>
 #include <cmath>
 

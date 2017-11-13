@@ -226,21 +226,13 @@ add_resources(pt_shaders ${PT_SHADER_SRC})
 # rt_pathtracer
 add_executable(rt_pathtracer
         src/rt_pathtracer/rt_pathtracer.cpp
-        src/rt_pathtracer/Renderer.h
-        src/rt_pathtracer/Scene.cpp src/rt_pathtracer/Scene.h
-        src/rt_pathtracer/gl/GLRenderer.cpp src/rt_pathtracer/gl/GLRenderer.h
-        src/rt_pathtracer/pt/Triangle.cpp src/rt_pathtracer/pt/Triangle.h
-        src/rt_pathtracer/gl/Mesh.cpp src/rt_pathtracer/gl/Mesh.h
-        src/rt_pathtracer/Object.h
-        src/rt_pathtracer/Camera.cpp src/rt_pathtracer/Camera.h
-        src/rt_pathtracer/pt/PathTraceRenderer.cpp src/rt_pathtracer/pt/PathTraceRenderer.h
-        src/rt_pathtracer/pt/Ray.h src/rt_pathtracer/pt/Intersection.h
-        src/rt_pathtracer/pt/Material.h
-        src/rt_pathtracer/defs.h
-        src/rt_pathtracer/TracableObject.h
-        src/rt_pathtracer/Sphere.cpp
-        src/rt_pathtracer/Sphere.h
-        src/rt_pathtracer/WorkQueue.h)
+        src/rt_pathtracer/Scene.cpp
+        src/rt_pathtracer/gl/GLRenderer.cpp
+        src/rt_pathtracer/pt/Triangle.cpp
+        src/rt_pathtracer/gl/Mesh.cpp
+        src/rt_pathtracer/Camera.cpp
+        src/rt_pathtracer/pt/PathTraceRenderer.cpp
+        src/rt_pathtracer/Sphere.cpp)
 target_link_libraries(rt_pathtracer ppgso pt_shaders)
 install (TARGETS rt_pathtracer DESTINATION .)
 

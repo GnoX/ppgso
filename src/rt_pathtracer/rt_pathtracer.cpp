@@ -1,8 +1,7 @@
+#define STB_IMAGE_IMPLEMENTATION
 #include <ppgso/ppgso.h>
 #include <src/rt_pathtracer/pt/PathTraceRenderer.h>
-#include "Renderer.h"
 #include "src/rt_pathtracer/gl/GLRenderer.h"
-#include "src/rt_pathtracer/gl/Mesh.h"
 #include "Sphere.h"
 
 #define WINDOW_WIDTH 512
@@ -20,16 +19,16 @@ public:
     void init_scene() {
         scene = std::make_unique<Scene>();
 
-        auto s1 = Sphere(10000, glm::vec3{0, -10010, -20}, Material::Light());
-        auto s2 = Sphere(10000, glm::vec3{-10010, 0, -20}, Material::Blue());
-        auto s3 = Sphere(10000, glm::vec3{10010, 0, -20}, Material::Red());
-        auto s4 = Sphere(10000, glm::vec3{0, 0, -9090}, Material::Green());
-        auto s5 = Sphere(10000, glm::vec3{0, 0, 10010}, Material::Cyan());
-        scene->add(s1);
-        scene->add(s2);
-        scene->add(s3);
-        scene->add(s4);
-        scene->add(s5);
+//        auto s1 = Sphere(10000, glm::vec3{0, -10010, -20}, Material::Light());
+//        auto s2 = Sphere(10000, glm::vec3{-10010, 0, -20}, Material::Blue());
+//        auto s3 = Sphere(10000, glm::vec3{10010, 0, -20}, Material::Red());
+//        auto s4 = Sphere(10000, glm::vec3{0, 0, -9090}, Material::Green());
+//        auto s5 = Sphere(10000, glm::vec3{0, 0, 10010}, Material::Cyan());
+//        scene->add(s1);
+//        scene->add(s2);
+//        scene->add(s3);
+//        scene->add(s4);
+//        scene->add(s5);
     }
 
 
@@ -106,7 +105,7 @@ private:
     }
 
     gl::GLRenderer gl_renderer;
-    pt::PathTraceRenderer pt_renderer{WINDOW_WIDTH, WINDOW_HEIGHT};
+    pt::PathTraceRenderer pt_renderer{WINDOW_WIDTH, WINDOW_HEIGHT, 4, "environment_map.hdr"};
     std::unique_ptr<Scene> scene;
 
 };
