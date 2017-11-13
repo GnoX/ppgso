@@ -7,7 +7,7 @@ namespace pathtracer {
                 : texture{(int) width, (int) height}
                 , sample_buffer(width, height)
                 , width(width) , height(height)
-                , num_threads(num_threads){
+                , num_threads(num_threads) {
             texture_shader.use();
             texture_shader.setUniform("Texture", texture);
             workers.resize(num_threads);
@@ -81,11 +81,21 @@ namespace pathtracer {
             for (unsigned y = tile_y; y < tile_y + tile_height; y++) {
                 for (unsigned x = tile_x; x < tile_x + tile_width; x++) {
                     if (!raytracing) return;
+
+
                     Spectrum color = sample_buffer.get_pixel(x, y);
                     auto ray = scene->camera.generateRay(x, y, width, height);
-                    color += trace_ray(ray, 5);
-                    sample_buffer.set_pixel(color, x, y);
+                    glm::vec3 focal_point = ray.point(focal_length);
 
+                    for (unsigned i = 0; i < dof_complexity; i++) {
+                        glm::vec3 disturbance = glm::linearRand(glm::vec3(.0f, .0f, .0),
+                                                                glm::vec3(dispersion, dispersion,
+                                                                          .0f));
+                        glm::vec3 view_ray_origin = ray.origin + disturbance;
+                        glm::vec3 direction = glm::normalize(focal_point - view_ray_origin);
+                        color += trace_ray(Ray{view_ray_origin, direction}, 5) * (1 / dof_complexity);
+                    }
+                    sample_buffer.set_pixel(color, x, y);
                     color /= current_sample;
                     color.clamp(.0f, 1.0f);
                     texture.image.setPixel(x, y, color.r, color.g, color.b);
@@ -96,7 +106,7 @@ namespace pathtracer {
         Spectrum PathTraceRenderer::trace_ray(const Ray &ray, unsigned int depth) const {
             if (depth == 0) return Spectrum{0, 0, 0};
 
-            const Intersection hit = cast(ray);
+            const Intersection hit = cast_ray(ray);
 
             // No hit
             if (hit.distance >= INF) {
@@ -201,7 +211,7 @@ namespace pathtracer {
             }
         }
 
-        Intersection PathTraceRenderer::cast(const Ray &ray) const {
+        Intersection PathTraceRenderer::cast_ray(const Ray &ray) const {
 //            Intersection i = noHit;
 //            for (auto &obj : scene->objects) {
 //                auto lh = obj->intersect(ray);

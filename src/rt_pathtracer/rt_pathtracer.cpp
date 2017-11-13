@@ -19,8 +19,14 @@ public:
     void init_scene() {
         scene = std::make_unique<Scene>();
 
-        auto sphere = Sphere(5, glm::vec3{0, 0, -10}, Material::Mirror());
-        scene->add(sphere);
+        auto s1= Sphere(5, glm::vec3{0, 0, -10}, Material::Green());
+        auto s2 = Sphere(5, glm::vec3{0, 0, -25}, Material::Red());
+        auto s3 = Sphere(5, glm::vec3{0, 0, -40}, Material::White());
+        auto s4 = Sphere(5, glm::vec3{0, 0, -55}, Material::Yellow());
+        scene->add(s1);
+        scene->add(s2);
+        scene->add(s3);
+        scene->add(s4);
         pt_renderer.set_scene(scene.get());
         gl_renderer.set_scene(scene.get());
     }
@@ -98,7 +104,7 @@ private:
     }
 
     gl::GLRenderer gl_renderer;
-    pt::PathTraceRenderer pt_renderer{WINDOW_WIDTH, WINDOW_HEIGHT, 4, "environment_map.hdr"};
+    pt::PathTraceRenderer pt_renderer{WINDOW_WIDTH, WINDOW_HEIGHT, 6, "environment_map.hdr"};
     std::unique_ptr<Scene> scene;
 
 };

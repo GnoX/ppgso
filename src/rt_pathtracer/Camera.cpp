@@ -52,14 +52,15 @@ void Camera::move(Camera::Direction dir) {
 
 Ray Camera::generateRay(int x, int y, int width, int height) const {
     // Camera deltas
-    glm::dvec3 vdu = 2.0 * right / (double)width;
-    glm::dvec3 vdv = 2.0 * -up / (double)height;
+    glm::vec3 vdu = 2.0f * right / (float) width;
+    glm::vec3 vdv = 2.0f * -up / (float) height;
 
-    glm::dvec3 direction = front
-                           + vdu * ((double)(-width/2 + x) + glm::linearRand(0.0, 1.0))
-                           + vdv * ((double)(-height/2 + y) + glm::linearRand(0.0, 1.0));
+    glm::vec3 direction = front
+                           + vdu * (-width/2 + x + glm::linearRand(0.0f, 1.0f))
+                           + vdv * (-height/2 + y + glm::linearRand(0.0f, 1.0f));
     Ray ray(pos, glm::normalize(direction));
     return ray;
 }
+
 
 }

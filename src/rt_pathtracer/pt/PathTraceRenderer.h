@@ -36,11 +36,15 @@ namespace pathtracer {
         public:
             PathTraceRenderer(unsigned width, unsigned height, unsigned num_threads = 4,
                               const std::string& environment_map_path = "");
+
+            float focal_length = 1.2;
+            float dof_complexity = 5;
+            float dispersion = .10f;
+
             void render(bool updated) override;
             void stop() override;
 
             void set_scene(Scene *scene) override;
-
         private:
             ppgso::Shader texture_shader{texture_vert_glsl, texture_frag_glsl};
             ppgso::Texture texture;
@@ -50,6 +54,7 @@ namespace pathtracer {
             Scene *scene;
             HDRImage environment_map;
             std::unique_ptr<BVH> bvh_accel;
+
 
             unsigned current_sample = 0;
             unsigned num_threads;
@@ -75,7 +80,7 @@ namespace pathtracer {
 
             void render_tile(unsigned tile_x, unsigned tile_y, unsigned tile_width, unsigned tile_height);
 
-            inline Intersection cast(const Ray &ray) const;
+            inline Intersection cast_ray(const Ray &ray) const;
 
             inline Spectrum trace_ray(const Ray &ray, unsigned int depth) const;
 
