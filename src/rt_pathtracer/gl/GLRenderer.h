@@ -3,16 +3,18 @@
 
 #include <shader.h>
 #include "src/rt_pathtracer/Renderer.h"
-#include "pt_shaders/simple_color_frag_glsl.h"
-#include "pt_shaders/simple_color_vert_glsl.h"
+#include "pt_shaders/color_frag_glsl.h"
+#include "pt_shaders/color_vert_glsl.h"
 
 namespace pathtracer { namespace gl {
 
 class GLRenderer : public Renderer {
 public:
-    void render(Scene &scene) override;
+    ppgso::Shader color_shader = ppgso::Shader(color_vert_glsl, color_frag_glsl);
 
-    ppgso::Shader color_shader = ppgso::Shader(simple_color_vert_glsl, simple_color_frag_glsl);
+    void render(Scene &scene, bool updated) override;
+    void stop() override;
+
 };
 
 }}

@@ -41,13 +41,25 @@ void Camera::move(Camera::Direction dir) {
 
 #define _case(dir, code) case dir: { code; } break;
     switch(dir) {
-        _case(FORWARD, pos += front * speed)
-        _case(BACKWARD, pos -= front * speed)
+        _case(FRONT, pos += front * speed)
+        _case(BACK, pos -= front * speed)
         _case(RIGHT, pos += right * speed)
         _case(LEFT, pos -= right * speed)
         _case(UP, pos += world_up * speed)
         _case(DOWN, pos -= world_up * speed)
     }
+}
+
+Ray Camera::generateRay(int x, int y, int width, int height) const {
+    // Camera deltas
+    glm::dvec3 vdu = 2.0 * right / (double)width;
+    glm::dvec3 vdv = 2.0 * -up / (double)height;
+
+    glm::dvec3 direction = front
+                           + vdu * ((double)(-width/2 + x) + glm::linearRand(0.0, 1.0))
+                           + vdv * ((double)(-height/2 + y) + glm::linearRand(0.0, 1.0));
+    Ray ray(pos, glm::normalize(direction));
+    return ray;
 }
 
 }

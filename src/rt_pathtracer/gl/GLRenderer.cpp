@@ -3,7 +3,7 @@
 
 namespace pathtracer {
     namespace gl {
-        void GLRenderer::render(Scene &scene) {
+        void GLRenderer::render(Scene &scene, bool updated) {
             color_shader.use();
             color_shader.setUniform("ProjectionMatrix", scene.camera.projection);
             color_shader.setUniform("ModelMatrix", glm::mat4{});
@@ -13,6 +13,10 @@ namespace pathtracer {
             for (auto &object : scene.objects) {
                 object->render();
             }
+        }
+
+        void GLRenderer::stop() {
+            // TODO
         }
     }
 }

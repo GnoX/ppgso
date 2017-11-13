@@ -218,7 +218,9 @@ install (TARGETS task7_particles DESTINATION .)
 
 # shaders for rt_pathtracer
 set(PT_SHADER_SRC
-        src/rt_pathtracer/shader/simple_color_frag.glsl src/rt_pathtracer/shader/simple_color_vert.glsl)
+        src/rt_pathtracer/shader/color_frag.glsl src/rt_pathtracer/shader/color_vert.glsl
+        src/rt_pathtracer/shader/texture_frag.glsl src/rt_pathtracer/shader/texture_vert.glsl)
+
 add_resources(pt_shaders ${PT_SHADER_SRC})
 
 # rt_pathtracer
@@ -229,7 +231,7 @@ add_executable(rt_pathtracer
         src/rt_pathtracer/gl/GLRenderer.cpp src/rt_pathtracer/gl/GLRenderer.h
         src/rt_pathtracer/pt/Triangle.cpp src/rt_pathtracer/pt/Triangle.h
         src/rt_pathtracer/gl/Mesh.cpp src/rt_pathtracer/gl/Mesh.h
-        src/rt_pathtracer/Object.cpp src/rt_pathtracer/Object.h src/rt_pathtracer/Camera.cpp src/rt_pathtracer/Camera.h)
+        src/rt_pathtracer/Object.h src/rt_pathtracer/Camera.cpp src/rt_pathtracer/Camera.h src/rt_pathtracer/pt/PathTraceRenderer.cpp src/rt_pathtracer/pt/PathTraceRenderer.h src/rt_pathtracer/pt/Ray.h src/rt_pathtracer/pt/Intersection.h src/rt_pathtracer/pt/Material.h src/rt_pathtracer/defs.h src/rt_pathtracer/TracableObject.h src/rt_pathtracer/Sphere.cpp src/rt_pathtracer/Sphere.h)
 target_link_libraries(rt_pathtracer ppgso pt_shaders)
 install (TARGETS rt_pathtracer DESTINATION .)
 

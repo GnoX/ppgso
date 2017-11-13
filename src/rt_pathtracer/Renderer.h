@@ -7,7 +7,8 @@
 class Renderer {
 
 public:
-    virtual void render(Scene &scene) = 0;
+    virtual void render(Scene &scene, bool updated) = 0;
+    virtual void stop() = 0;
 };
 
 
