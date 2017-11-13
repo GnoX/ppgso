@@ -105,6 +105,11 @@ namespace ppgso {
     void hideCursor();
 
     /*!
+     * Disable mouse cursor (unlimited mouse movement inside window)
+     */
+    void disableCursor();
+
+    /*!
      * Show mouse cursor
      */
     void showCursor();

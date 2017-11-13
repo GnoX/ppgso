@@ -146,3 +146,7 @@ void Window::fpsLimit(bool limit) {
   if(limit) glfwSwapInterval(1);
   glfwSwapInterval(0);
 }
+
+void Window::disableCursor() {
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
