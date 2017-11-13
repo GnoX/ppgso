@@ -58,6 +58,10 @@ public:
         update_scene();
 //        gl_renderer.render(*scene);
         pt_renderer.render(*scene, scene_updated);
+
+        if (glfwWindowShouldClose(window)) {
+            pt_renderer.stop();
+        }
     }
 
 private:

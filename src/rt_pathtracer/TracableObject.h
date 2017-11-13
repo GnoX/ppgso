@@ -3,6 +3,7 @@
 
 
 #include <src/rt_pathtracer/pt/Ray.h>
+#include <src/rt_pathtracer/pt/Intersection.h>
 #include "Object.h"
 
 struct TracableObject {

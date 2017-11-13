@@ -10,15 +10,29 @@
 #include <thread>
 #include <atomic>
 #include <glm/gtx/compatibility.hpp>
+#include <src/rt_pathtracer/WorkQueue.h>
+#include <condition_variable>
 #include "Ray.h"
 #include "Intersection.h"
 
 
 namespace pathtracer {
     namespace pt {
+
+        struct Work {
+            Work() : Work(0, 0, 0, 0) { }
+
+            Work(int x, int y, int w, int h)
+                    : tile_x(x), tile_y(y), tile_w(w), tile_h(h) {}
+
+            int tile_x;
+            int tile_y;
+            int tile_w;
+            int tile_h;
+        };
+
         class PathTraceRenderer : public Renderer {
         public:
-
             ppgso::Shader texture_shader{texture_vert_glsl, texture_frag_glsl};
             ppgso::Texture texture;
             std::vector<glm::vec3> sample_buffer;
@@ -28,22 +42,29 @@ namespace pathtracer {
 
             Scene *scene;
             int currentSample = 0;
+            int num_threads;
 
             enum Status {
-                RENDERING, IDLE, DONE
+                RENDERING, IDLE, SYNC_WORKERS, DONE
             } status = IDLE;
 
             int width;
             int height;
-            std::atomic<bool> rendering;
+            std::atomic<bool> raytracing;
+            std::atomic<int> workers_done;
+            std::mutex thread_sync_mutex;
+            std::condition_variable thread_sync_condition;
 
-            PathTraceRenderer(int width, int height)
+            WorkQueue<Work> work_queue;
+
+            PathTraceRenderer(int width, int height, int num_threads = 8)
                     : texture{width, height}
                     , sample_buffer(std::vector<glm::vec3>(width * height))
-                    , width(width), height(height) {
+                    , width(width) , height(height)
+                    , num_threads(num_threads){
                 texture_shader.use();
                 texture_shader.setUniform("Texture", texture);
-                workers.resize(1);
+                workers.resize(num_threads);
             }
 
             void render(Scene &scene, bool updated) override {
@@ -56,18 +77,28 @@ namespace pathtracer {
             }
 
             void stop() override {
-                // TODO
+                raytracing = false;
+                for (auto worker : workers) {
+                    if (worker != nullptr) {
+                        worker->join();
+                        delete worker;
+                    }
+                }
             }
 
             void start() {
+                int tileSize = width / 32;
+                workers_done = 0;
+                for (int y = 0; y < height; y += tileSize) {
+                    for (int x = 0; x < width; x += tileSize) {
+                        work_queue.put_work(Work(x, y, tileSize, tileSize));
+                    }
+                }
                 status = RENDERING;
-                rendering = true;
-
-                workers[0] = new std::thread(&PathTraceRenderer::worker_thread, this);
             }
 
             void restart() {
-                rendering = false;
+                raytracing = false;
                 currentSample = 1;
                 for (auto worker : workers) {
                     if (worker != nullptr) {
@@ -75,29 +106,53 @@ namespace pathtracer {
                         delete worker;
                     }
                 }
+                work_queue.clear();
 
                 std::fill(sample_buffer.begin(), sample_buffer.end(), glm::vec3{0, 0, 0});
                 texture.image.clear({0, 0, 0});
                 texture.update();
+
+                raytracing = true;
                 start();
+
+                for (int i = 0; i < num_threads; i++) {
+                    workers[i] = new std::thread(&PathTraceRenderer::worker_thread, this);
+                }
             }
 
             void worker_thread() {
-                for (int y = 0; y < height; y++) {
-                    for (int x = 0; x < width; x++) {
-                        if (rendering) {
-                            glm::dvec3 color = sample_buffer[x + y * width];
-                            auto ray = scene->camera.generateRay(x, y, width, height);
-                            color += trace_ray(ray, 5);
-                            sample_buffer[x + y * width] = color;
-
-                            color = glm::clamp(color / (double) currentSample, 0.0, 1.0);
-                            texture.image.setPixel(x, y, (float) color.r, (float) color.g, (float) color.b);
-                        } else return;
+                Work work;
+                while (raytracing) {
+                    if (work_queue.try_get_work(&work)) {
+                        render_tile(work.tile_x, work.tile_y, work.tile_w, work.tile_h);
+                    } else {
+                        status = SYNC_WORKERS;
+                        workers_done++;
+                        if (workers_done == num_threads) {
+                            currentSample++;
+                            start();
+                            thread_sync_condition.notify_all();
+                        } else {
+                            std::unique_lock<std::mutex> lk(thread_sync_mutex);
+                            thread_sync_condition.wait(lk, [this] { return status == RENDERING; });
+                        }
                     }
                 }
-                currentSample++;
-                status = IDLE;
+            }
+
+            void render_tile(int tile_x, int tile_y, int tile_width, int tile_height) {
+                for (int y = tile_y; y < tile_y + tile_height; y++) {
+                    for (int x = tile_x; x < tile_x + tile_width; x++) {
+                        if (!raytracing) return;
+                        glm::dvec3 color = sample_buffer[x + y * width];
+                        auto ray = scene->camera.generateRay(x, y, width, height);
+                        color += trace_ray(ray, 5);
+                        sample_buffer[x + y * width] = color;
+
+                        color = glm::clamp(color / (double) currentSample, 0.0, 1.0);
+                        texture.image.setPixel(x, y, (float) color.r, (float) color.g, (float) color.b);
+                    }
+                }
             }
 
             inline Intersection cast(const Ray &ray) const {

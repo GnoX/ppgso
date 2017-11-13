@@ -1,5 +1,6 @@
 #include <cmath>
 #include <glm/geometric.hpp>
+#include <src/rt_pathtracer/pt/Intersection.h>
 #include "Sphere.h"
 
 void Sphere::render() const {
