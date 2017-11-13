@@ -232,7 +232,9 @@ add_executable(rt_pathtracer
         src/rt_pathtracer/gl/Mesh.cpp
         src/rt_pathtracer/Camera.cpp
         src/rt_pathtracer/pt/PathTraceRenderer.cpp
-        src/rt_pathtracer/Sphere.cpp)
+        src/rt_pathtracer/Sphere.cpp
+        src/rt_pathtracer/AABB.h
+        src/rt_pathtracer/BVH.h)
 target_link_libraries(rt_pathtracer ppgso pt_shaders)
 install (TARGETS rt_pathtracer DESTINATION .)
 

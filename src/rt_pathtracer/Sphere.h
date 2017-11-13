@@ -3,6 +3,7 @@
 
 
 #include "TracableObject.h"
+#include "AABB.h"
 
 class Sphere : public TracableObject {
 public:
@@ -16,6 +17,7 @@ public:
     void render() const override;
     Intersection intersect(const Ray &ray) const override;
 
+    AABB get_bbox() const override;
 
 };
 

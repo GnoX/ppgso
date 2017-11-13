@@ -12,6 +12,7 @@
 #include <src/rt_pathtracer/WorkQueue.h>
 #include <condition_variable>
 #include <src/rt_pathtracer/HDRImage.h>
+#include <src/rt_pathtracer/BVH.h>
 #include "Ray.h"
 #include "Intersection.h"
 
@@ -35,8 +36,10 @@ namespace pathtracer {
         public:
             PathTraceRenderer(unsigned width, unsigned height, unsigned num_threads = 4,
                               const std::string& environment_map_path = "");
-            void render(Scene &scene, bool updated) override;
+            void render(bool updated) override;
             void stop() override;
+
+            void set_scene(Scene *scene) override;
 
         private:
             ppgso::Shader texture_shader{texture_vert_glsl, texture_frag_glsl};
@@ -46,6 +49,7 @@ namespace pathtracer {
             std::vector<std::thread*> workers;
             Scene *scene;
             HDRImage environment_map;
+            std::unique_ptr<BVH> bvh_accel;
 
             unsigned current_sample = 0;
             unsigned num_threads;
@@ -62,6 +66,7 @@ namespace pathtracer {
             enum Status {
                 RENDERING, IDLE, SYNC_WORKERS, DONE
             } status = IDLE;
+
             void start();
 
             void restart();
@@ -72,12 +77,6 @@ namespace pathtracer {
 
             inline Intersection cast(const Ray &ray) const;
 
-            /*
-             * Trace a ray as it collides with objects in the world
-             * @param ray Ray to trace
-             * @param depth Maximum number of collisions to trace
-             * @return Color representing the accumulated lighting for each ray collision
-             */
             inline Spectrum trace_ray(const Ray &ray, unsigned int depth) const;
 
             Spectrum sample_environment(const Ray &ray) const;

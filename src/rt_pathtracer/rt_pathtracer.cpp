@@ -19,16 +19,10 @@ public:
     void init_scene() {
         scene = std::make_unique<Scene>();
 
-//        auto s1 = Sphere(10000, glm::vec3{0, -10010, -20}, Material::Light());
-//        auto s2 = Sphere(10000, glm::vec3{-10010, 0, -20}, Material::Blue());
-//        auto s3 = Sphere(10000, glm::vec3{10010, 0, -20}, Material::Red());
-//        auto s4 = Sphere(10000, glm::vec3{0, 0, -9090}, Material::Green());
-//        auto s5 = Sphere(10000, glm::vec3{0, 0, 10010}, Material::Cyan());
-//        scene->add(s1);
-//        scene->add(s2);
-//        scene->add(s3);
-//        scene->add(s4);
-//        scene->add(s5);
+        auto sphere = Sphere(5, glm::vec3{0, 0, -10}, Material::Mirror());
+        scene->add(sphere);
+        pt_renderer.set_scene(scene.get());
+        gl_renderer.set_scene(scene.get());
     }
 
 
@@ -52,15 +46,14 @@ public:
     }
 
     void onIdle() override {
+        if (glfwWindowShouldClose(window)) {
+            pt_renderer.stop();
+        }
         glClearColor(.3f, .3f, .3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         update_scene();
 //        gl_renderer.render(*scene);
-        pt_renderer.render(*scene, scene_updated);
-
-        if (glfwWindowShouldClose(window)) {
-            pt_renderer.stop();
-        }
+        pt_renderer.render(scene_updated);
     }
 
 private:

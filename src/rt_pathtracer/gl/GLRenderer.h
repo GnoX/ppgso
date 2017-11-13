@@ -11,9 +11,11 @@ namespace pathtracer { namespace gl {
 class GLRenderer : public Renderer {
 public:
     ppgso::Shader color_shader = ppgso::Shader(color_vert_glsl, color_frag_glsl);
+    Scene *scene;
 
-    void render(Scene &scene, bool updated) override;
+    void render(bool updated) override;
     void stop() override;
+    void set_scene(Scene *scene) override;
 
 };
 

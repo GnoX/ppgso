@@ -41,3 +41,7 @@ Sphere::Sphere(double radius, glm::vec3 center, const Material material)
         , center(center){
 
 }
+
+AABB Sphere::get_bbox() const {
+    return AABB(center - glm::vec3(radius, radius, radius), center + glm::vec3(radius, radius, radius));
+}
