@@ -216,6 +216,10 @@ add_executable(task7_particles src/task7_particles/task7_particles.cpp)
 target_link_libraries(task7_particles ppgso shaders)
 install (TARGETS task7_particles DESTINATION .)
 
+add_executable(rt_pathtracer src/rt_pathtracer/rt_pathtracer.cpp src/rt_pathtracer/Renderer.h src/rt_pathtracer/Scene.cpp src/rt_pathtracer/Scene.h src/rt_pathtracer/gl/GLRenderer.cpp src/rt_pathtracer/gl/GLRenderer.h src/rt_pathtracer/pt/Triangle.cpp src/rt_pathtracer/pt/Triangle.h src/rt_pathtracer/gl/Mesh.cpp src/rt_pathtracer/gl/Mesh.h src/rt_pathtracer/Object.cpp src/rt_pathtracer/Object.h)
+target_link_libraries(rt_pathtracer ppgso shaders)
+install (TARGETS rt_pathtracer DESTINATION .)
+
 #
 # INSTALLATION
 #
