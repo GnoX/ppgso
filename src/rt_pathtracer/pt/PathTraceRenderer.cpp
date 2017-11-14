@@ -157,7 +157,7 @@ namespace pathtracer {
                     // Random diffuse ray
                     Ray diffuseRay{hit.position, diffuse};
                     // Trace the ray recursively
-                    color += trace_ray(diffuseRay, depth - 1) * hit.material->diffuse;
+                    color += trace_ray(diffuseRay, depth - 1) * hit.material->get_diffuse(hit.uv);
                 }
 
                 return color;

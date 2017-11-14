@@ -19,9 +19,8 @@ struct HDRImage {
     explicit HDRImage(const std::string& filename) {
         int w, h, n;
         Spectrum* image = reinterpret_cast<Spectrum *>(stbi_loadf(filename.c_str(), &w, &h, &n, 0));
-        if (n != 3) throw std::runtime_error("image has incorrect number of channels");
+        if (n != 3) throw std::runtime_error("Cannot handle specified amount of channels");
 
-        HDRImage img((unsigned) w, (unsigned) h);
         if (image != nullptr) {
             data = std::vector<Spectrum>(image, image + w * h);
             this->w = (unsigned) w;
@@ -85,6 +84,7 @@ struct HDRImage {
         }
     }
 
+    inline bool empty() const { return w == 0 && h == 0; };
 
     void clear() { std::fill(data.begin(), data.end(), Spectrum{0, 0, 0}); }
 

@@ -14,19 +14,20 @@ public:
     PathTracerWindow() : Window{"rt_pathtracer", WINDOW_WIDTH, WINDOW_HEIGHT} {
         init_scene();
         disableCursor();
+//        hideCursor();
     }
 
     void init_scene() {
         scene = std::make_unique<Scene>();
 
-        auto s1= Sphere(5, glm::vec3{0, 0, -10}, Material::Green());
-        auto s2 = Sphere(5, glm::vec3{0, 0, -25}, Material::Red());
-        auto s3 = Sphere(5, glm::vec3{0, 0, -40}, Material::White());
-        auto s4 = Sphere(5, glm::vec3{0, 0, -55}, Material::Yellow());
+        auto s1 = Sphere(5, glm::vec3{0, 0, -10}, Material::Bricks());
+//        auto s2 = Sphere(5, glm::vec3{0, 0, -25}, Material::Cyan());
+//        auto s3 = Sphere(5, glm::vec3{0, 0, -40}, Material::Glass());
+//        auto s4 = Sphere(5, glm::vec3{0, 0, -55}, Material::Yellow());
         scene->add(s1);
-        scene->add(s2);
-        scene->add(s3);
-        scene->add(s4);
+//        scene->add(s2);
+//        scene->add(s3);
+//        scene->add(s4);
         pt_renderer.set_scene(scene.get());
         gl_renderer.set_scene(scene.get());
     }

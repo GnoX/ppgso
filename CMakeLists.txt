@@ -234,7 +234,17 @@ add_executable(rt_pathtracer
         src/rt_pathtracer/pt/PathTraceRenderer.cpp
         src/rt_pathtracer/Sphere.cpp
         src/rt_pathtracer/AABB.h
-        src/rt_pathtracer/BVH.h)
+        src/rt_pathtracer/BVH.h
+        src/rt_pathtracer/Spectrum.h
+        src/rt_pathtracer/Renderer.h
+        src/rt_pathtracer/HDRImage.h
+        src/rt_pathtracer/Material.h
+        src/rt_pathtracer/pt/Ray.h
+        src/rt_pathtracer/pt/Intersection.h
+        src/rt_pathtracer/Object.h
+        src/rt_pathtracer/TracableObject.h
+        src/rt_pathtracer/WorkQueue.h
+        src/rt_pathtracer/Image.h)
 target_link_libraries(rt_pathtracer ppgso pt_shaders)
 install (TARGETS rt_pathtracer DESTINATION .)
 

@@ -4,7 +4,7 @@
 #include <glm/vec3.hpp>
 #include <limits>
 #include <cmath>
-#include "Material.h"
+#include "src/rt_pathtracer/Material.h"
 #include "../defs.h"
 
 /*!
@@ -14,6 +14,7 @@ struct Intersection {
     double distance = INF;
     glm::vec3 position, normal;
     const Material *material;
+    glm::uvec2 uv;
 };
 
 static Intersection noHit{ INF, {0,0,0}, {0,0,0}, nullptr };

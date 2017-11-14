@@ -21,6 +21,10 @@ struct Spectrum {
         return Spectrum{r * s, g * s, b * s};
     }
 
+    inline Spectrum operator*(Spectrum other) {
+        return Spectrum{r * other.r, g * other.g, b * other.b};
+    }
+
     inline Spectrum &operator*=(float s) {
         r *= s;
         g *= s;

@@ -18,6 +18,7 @@ public:
     Intersection intersect(const Ray &ray) const override;
 
     AABB get_bbox() const override;
+    glm::uvec2 get_uv(glm::vec3 point) const;
 
 };
 
