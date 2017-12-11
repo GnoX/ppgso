@@ -7,10 +7,11 @@
 #include "defs.h"
 #include "Spectrum.h"
 
+template <unsigned int Channels>
 struct HDRImage {
     unsigned w;
     unsigned h;
-    std::vector<Spectrum> data;
+    std::vector<Spectrum<Channels>> data;
 
     HDRImage() : w(0), h(0) { }
 
@@ -18,11 +19,11 @@ struct HDRImage {
 
     explicit HDRImage(const std::string& filename) {
         int w, h, n;
-        Spectrum* image = reinterpret_cast<Spectrum *>(stbi_loadf(filename.c_str(), &w, &h, &n, 0));
-        if (n != 3) throw std::runtime_error("Cannot handle specified amount of channels");
+        Spectrum<Channels>* image = reinterpret_cast<Spectrum<Channels>*>(stbi_loadf(filename.c_str(), &w, &h, &n, 0));
+        if (n != Channels) throw std::runtime_error("Cannot handle specified amount of channels");
 
         if (image != nullptr) {
-            data = std::vector<Spectrum>(image, image + w * h);
+            data = std::vector<Spectrum<Channels>>(image, image + w * h);
             this->w = (unsigned) w;
             this->h = (unsigned) h;
         }
@@ -35,11 +36,11 @@ struct HDRImage {
         clear();
     }
 
-    inline Spectrum get_pixel(unsigned x, unsigned y) const {
+    inline Spectrum<Channels> get_pixel(unsigned x, unsigned y) const {
         return data[x + y * w];
     }
 
-    inline void set_pixel(const Spectrum& s, unsigned x, unsigned y) {
+    inline void set_pixel(const Spectrum<Channels>& s, unsigned x, unsigned y) {
         data[x + y * w] = s;
     }
 
@@ -56,13 +57,13 @@ struct HDRImage {
         auto exposure = static_cast<float>(sqrt(pow(2, level)));
         for (unsigned y = 0; y < h; ++y) {
             for (unsigned x = 0; x < w; ++x) {
-                Spectrum s = data[x + y * w];
+                Spectrum<Channels> s = data[x + y * w];
                 float l = s.illumination();
                 s *= key / avg;
                 s *= ((l + 1) / (white * white)) / (l + 1);
-                float r = std::pow(s.r * exposure, one_over_gamma);
-                float g = std::pow(s.g * exposure, one_over_gamma);
-                float b = std::pow(s.b * exposure, one_over_gamma);
+                float r = std::pow(s.c[0] * exposure, one_over_gamma);
+                float g = std::pow(s.c[1] * exposure, one_over_gamma);
+                float b = std::pow(s.c[2] * exposure, one_over_gamma);
                 target.setPixel(x, y, r, g, b);
             }
         }
@@ -75,10 +76,10 @@ struct HDRImage {
         auto exposure = static_cast<float>(sqrt(pow(2, level)));
         for (unsigned y = y0; y < y1; ++y) {
             for (unsigned x = x0; x < x1; ++x) {
-                const Spectrum& s = data[x + y * w];
-                float r = std::pow(s.r * exposure, one_over_gamma);
-                float g = std::pow(s.g * exposure, one_over_gamma);
-                float b = std::pow(s.b * exposure, one_over_gamma);
+                const Spectrum<Channels>& s = data[x + y * w];
+                float r = std::pow(s.c[0] * exposure, one_over_gamma);
+                float g = std::pow(s.c[1] * exposure, one_over_gamma);
+                float b = std::pow(s.c[2] * exposure, one_over_gamma);
                 target.setPixel(x, y, r, g, b);
             }
         }
@@ -86,8 +87,10 @@ struct HDRImage {
 
     inline bool empty() const { return w == 0 && h == 0; };
 
-    void clear() { std::fill(data.begin(), data.end(), Spectrum{0, 0, 0}); }
+    void clear() { std::fill(data.begin(), data.end(), Spectrum<Channels>{0}); }
 
 };
+typedef HDRImage<3> HDRImage3;
+typedef HDRImage<1> HDRImage1;
 
 #endif //PPGSO_HDRIMAGE_H

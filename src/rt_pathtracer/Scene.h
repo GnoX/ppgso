@@ -14,6 +14,7 @@ class Scene {
 public:
     pathtracer::Camera camera;
     std::map<int, int> key;
+    std::map<int, int> last_key;
     int key_mod;
 
     std::vector<std::unique_ptr<TracableObject>> objects;

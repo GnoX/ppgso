@@ -11,20 +11,30 @@ using namespace pathtracer;
 class PathTracerWindow : public ppgso::Window {
 public:
     bool scene_updated = true;
+    bool cursor_disabled = false;
     PathTracerWindow() : Window{"rt_pathtracer", WINDOW_WIDTH, WINDOW_HEIGHT} {
         init_scene();
-        disableCursor();
-//        hideCursor();
+        showCursor();
     }
 
     void init_scene() {
         scene = std::make_unique<Scene>();
 
-        auto s1 = Sphere(5, glm::vec3{0, 0, -10}, Material::Bricks());
-//        auto s2 = Sphere(5, glm::vec3{0, 0, -25}, Material::Cyan());
-//        auto s3 = Sphere(5, glm::vec3{0, 0, -40}, Material::Glass());
-//        auto s4 = Sphere(5, glm::vec3{0, 0, -55}, Material::Yellow());
-        scene->add(s1);
+        int size = 5;
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                auto sphere = Sphere(1, glm::vec3(0, i * 2.1f, j * 2.1f),
+                                     Material::new_mr_material(i / (float) size, j / (float) size, {1.0f, 1.0f, 1.0f}));
+                scene->add(sphere);
+            }
+        }
+
+//        auto s1 = Sphere(1, glm::vec3{-3, 0, -3}, Material::Bricks());
+//////        auto s2 = Sphere(1, glm::vec3{0, 0, 5.7}, Material::ReflectiveAndRefractive());
+////        auto s3 = Sphere(1, glm::vec3{0, 0, -8.4}, Material::Mirror());
+//        auto s2 = Sphere(1, glm::vec3{0, 0, -3}, Material::MetalScuffs());
+////        auto s1 = Sphere(1, glm::vec3(0, 0, -3), Material::new_mr_material(1.0f, 0.50f, {0.0f, 0.0f, 1.0f}));
+//        scene->add(s1);
 //        scene->add(s2);
 //        scene->add(s3);
 //        scene->add(s4);
@@ -101,11 +111,25 @@ private:
             scene_updated = true;
         }
 
+        if (scene->last_key[GLFW_KEY_F3] && !scene->key[GLFW_KEY_F3]) {
+            cursor_disabled = !cursor_disabled;
+            if (cursor_disabled) {
+                disableCursor();
+            } else {
+                showCursor();
+            }
+
+        }
+        scene->last_key = scene->key;
+
+
         scene->camera.update();
     }
 
     gl::GLRenderer gl_renderer;
-    pt::PathTraceRenderer pt_renderer{WINDOW_WIDTH, WINDOW_HEIGHT, 6, "environment_map.hdr"};
+//    pt::PathTraceRenderer pt_renderer{WINDOW_WIDTH, WINDOW_HEIGHT, 4, "env_map_2.hdr"};
+    pt::PathTraceRenderer pt_renderer{WINDOW_WIDTH, WINDOW_HEIGHT, 4, "environment_map.hdr"};
+//    pt::PathTraceRenderer pt_renderer{WINDOW_WIDTH, WINDOW_HEIGHT, 1, "debug_env.jpg"};
     std::unique_ptr<Scene> scene;
 
 };

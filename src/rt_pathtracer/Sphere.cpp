@@ -22,11 +22,11 @@ Intersection Sphere::intersect(const Ray &ray) const {
             glm::vec3 pt = ray.point(t);
             glm::uvec2 uv = get_uv(pt);
             glm::vec3 n;
-            if (material.normal_map.empty()) {
+            if (material.normal_map == nullptr) {
                 n = glm::normalize(pt - center);
             } else {
-                Spectrum s = material.normal_map.get_pixel(uv.x, uv.y);
-                n = {s.r, s.g, s.b};
+                Spectrum<3> s = material.normal_map->get_pixel(uv.x, uv.y);
+                n = {s.c[0], s.c[1], s.c[2]};
             }
             return {t, pt, n, &material, uv};
         }
@@ -37,11 +37,11 @@ Intersection Sphere::intersect(const Ray &ray) const {
             glm::vec3 pt = ray.point(t);
             glm::vec3 n;
             glm::uvec2 uv = get_uv(pt);
-            if (material.normal_map.empty()) {
+            if (material.normal_map == nullptr) {
                 n = glm::normalize(pt - center);
             } else {
-                Spectrum s = material.normal_map.get_pixel(uv.x, uv.y);
-                n = {s.r, s.g, s.b};
+                Spectrum<3> s = material.normal_map->get_pixel(uv.x, uv.y);
+                n = {s.c[0], s.c[1], s.c[2]};
             }
             return {t, pt, n, &material, uv};
         }
@@ -62,12 +62,12 @@ AABB Sphere::get_bbox() const {
 
 glm::uvec2 Sphere::get_uv(glm::vec3 pt) const {
     unsigned w, h;
-    if (!material.diffuse_map.empty()) {
-        w = material.diffuse_map.w;
-        h = material.diffuse_map.h;
-    } else if (!material.normal_map.empty()) {
-        w = material.normal_map.w;
-        h = material.diffuse_map.h;
+    if (material.albedo != nullptr) {
+        w = material.albedo->w;
+        h = material.albedo->h;
+    } else if (material.normal_map != nullptr) {
+        w = material.normal_map->w;
+        h = material.albedo->h;
     } else return {0, 0};
 
     pt = glm::normalize(pt - center);
