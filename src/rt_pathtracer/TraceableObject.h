@@ -7,8 +7,8 @@
 #include "Object.h"
 #include "AABB.h"
 
-struct TracableObject {
-    virtual ~TracableObject() = default;
+struct TraceableObject {
+    virtual ~TraceableObject() = default;
 
     virtual Intersection intersect(const Ray &ray) const = 0;
     virtual void render() const = 0;

@@ -2,10 +2,10 @@
 #define PPGSO_SPHERE_H
 
 
-#include "TracableObject.h"
+#include "TraceableObject.h"
 #include "AABB.h"
 
-class Sphere : public TracableObject {
+class Sphere : public TraceableObject {
 public:
     const Material material;
 

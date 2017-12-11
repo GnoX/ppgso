@@ -8,7 +8,7 @@
 #include <glm/vec2.hpp>
 #include "Object.h"
 #include "Camera.h"
-#include "TracableObject.h"
+#include "TraceableObject.h"
 
 class Scene {
 public:
@@ -17,7 +17,7 @@ public:
     std::map<int, int> last_key;
     int key_mod;
 
-    std::vector<std::unique_ptr<TracableObject>> objects;
+    std::vector<std::unique_ptr<TraceableObject>> objects;
     struct {
         double x, y;
         bool left, right;

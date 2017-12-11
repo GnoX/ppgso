@@ -5,7 +5,7 @@
 #include <ppgso/ppgso.h>
 #include <algorithm>
 #include "AABB.h"
-#include "TracableObject.h"
+#include "TraceableObject.h"
 
 struct BVHNode {
     AABB bbox;
@@ -26,11 +26,11 @@ struct BVHNode {
 class BVH {
 public:
     std::unique_ptr<BVHNode> root;
-    std::vector<TracableObject*> primitives;
+    std::vector<TraceableObject*> primitives;
 
-    BVH(std::vector<std::unique_ptr<TracableObject>>& primitives, size_t leaf_size) {
+    BVH(std::vector<std::unique_ptr<TraceableObject>>& primitives, size_t leaf_size) {
 
-        this->primitives = std::vector<TracableObject*>(primitives.size(), nullptr);
+        this->primitives = std::vector<TraceableObject*>(primitives.size(), nullptr);
         for (unsigned i = 0; i < this->primitives.size(); i++) {
             this->primitives[i] = primitives[i].get();
         }
@@ -132,7 +132,7 @@ public:
             node->right = std::make_shared<BVHNode>(bbox_right, node->n_start + node->n_primitives / 2, node->n_primitives / 2);
         } else {
             auto prim_in_left =
-                    [&best_axis, &best_pplane, &best_cmin, &best_cmax](const TracableObject* obj) {
+                    [&best_axis, &best_pplane, &best_cmin, &best_cmax](const TraceableObject* obj) {
                         double centroid = obj->get_bbox().centroid()[best_axis];
                         return compute_bucket(best_cmin, best_cmax, centroid) < best_pplane;
                     };

@@ -5,9 +5,11 @@
 
 #include <limits>
 #include <cmath>
+#include <ppgso/ppgso.h>
 
 const double INF = std::numeric_limits<float>::infinity();
 constexpr double EPS = std::numeric_limits<float>::epsilon();   // Numerical epsilon
 const double DELTA = sqrt(EPS);                             // Delta to use
+
 
 #endif //PPGSO_DEFS_H

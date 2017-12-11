@@ -242,7 +242,7 @@ add_executable(rt_pathtracer
         src/rt_pathtracer/pt/Ray.h
         src/rt_pathtracer/pt/Intersection.h
         src/rt_pathtracer/Object.h
-        src/rt_pathtracer/TracableObject.h
+        src/rt_pathtracer/TraceableObject.h
         src/rt_pathtracer/WorkQueue.h
         src/rt_pathtracer/Image.h)
 target_link_libraries(rt_pathtracer ppgso pt_shaders)

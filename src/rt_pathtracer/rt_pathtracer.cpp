@@ -2,11 +2,72 @@
 #include <ppgso/ppgso.h>
 #include <src/rt_pathtracer/pt/PathTraceRenderer.h>
 #include "src/rt_pathtracer/gl/GLRenderer.h"
+#include "src/rt_pathtracer/pt/Triangle.h"
 #include "Sphere.h"
 
 #define WINDOW_WIDTH 512
 #define WINDOW_HEIGHT 512
 using namespace pathtracer;
+
+
+struct Vertex {
+    glm::vec4 position;
+//    glm::vec4 normal;
+//    glm::vec2 texCoord;
+    glm::vec4 color;
+};
+
+struct Face {
+    Vertex v0, v1, v2;
+};
+
+std::vector<Face> load_obj(const std::string filename) {
+    // Using tiny obj loader from ppgso lib
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+    std::string err = tinyobj::LoadObj(shapes, materials, filename.c_str());
+
+    // Will only convert 1st shape to Faces
+    auto &mesh = shapes[0].mesh;
+
+    // Collect data in vectors
+    std::vector<glm::vec4> positions;
+    for (int i = 0; i < (int) mesh.positions.size() / 3; ++i)
+        positions.emplace_back(mesh.positions[3 * i], mesh.positions[3 * i + 1], mesh.positions[3 * i + 2], 1);
+
+    std::vector<glm::vec4> normals;
+    for (int i = 0; i < (int) mesh.normals.size() / 3; ++i)
+        normals.emplace_back(mesh.normals[3 * i], mesh.normals[3 * i + 1], mesh.normals[3 * i + 2], 1);
+
+    std::vector<glm::vec2> texcoords;
+    for (int i = 0; i < (int) mesh.texcoords.size() / 2; ++i)
+        texcoords.emplace_back(mesh.texcoords[2 * i], mesh.texcoords[2 * i + 1]);
+
+    // Fill the vector of Faces with data
+    std::vector<Face> faces(mesh.indices.size() / 3);
+    for (int i = 0; i < (int) faces.size(); i++) {
+        faces[i] = Face{
+                {
+                        positions[mesh.indices[i * 3]],
+//                        normals[mesh.indices[i * 3]],
+//                        texcoords[mesh.indices[i * 3]],
+                        {1, 1, 1, 1}
+                }, {
+                        positions[mesh.indices[i * 3 + 1]],
+//                        normals[mesh.indices[i * 3 + 1]],
+//                        texcoords[mesh.indices[i * 3 + 1]],
+                        {1, 1, 1, 1}
+                }, {
+                        positions[mesh.indices[i * 3 + 2]],
+//                        normals[mesh.indices[i * 3 + 2]],
+//                        texcoords[mesh.indices[i * 3 + 2]],
+                        {1, 1, 1, 1}
+                }
+        };
+    }
+    return faces;
+}
+
 
 class PathTracerWindow : public ppgso::Window {
 public:
@@ -28,6 +89,23 @@ public:
                 scene->add(sphere);
             }
         }
+        auto faces = load_obj("bunny.obj");
+        Material m = Material::new_mr_material(0.0f, 1.0f, {1.0f, 0.0f, 0.0f});
+        glm::mat4 translation = glm::translate(glm::mat4(), glm::vec3(1, -13, -3.0));
+        glm::mat4 scale = glm::scale(glm::mat4(), glm::vec3(90.0));
+        glm::mat4 model = translation * scale;
+        for (auto &face : faces) {
+            auto v0 = model * face.v0.position;
+            auto v1 = model * face.v1.position;
+            auto v2 = model * face.v2.position;
+            glm::vec3 vv0(v0.x, v0.y, v0.z);
+            glm::vec3 vv1(v1.x, v1.y, v1.z);
+            glm::vec3 vv2(v2.x, v2.y, v2.z);
+            auto triangle = pt::Triangle(vv0, vv1, vv2, m);
+            scene->add(triangle);
+//            objects.emplace_back(std::move(std::make_unique<pt::Triangle>(vv0, vv1, vv2, m)));
+        }
+
 
 //        auto s1 = Sphere(1, glm::vec3{-3, 0, -3}, Material::Bricks());
 //////        auto s2 = Sphere(1, glm::vec3{0, 0, 5.7}, Material::ReflectiveAndRefractive());
