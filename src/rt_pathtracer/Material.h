@@ -24,8 +24,8 @@ struct Material {
     std::shared_ptr<HDRImage1> roughness;
     float transparency = 0;
     float ior = 1.4f;
-    float fresnel = 0;
-    glm::vec3 specular_color = {1.0f, 1.0f, 1.0f};
+    float fresnel = 1.0f;
+    glm::vec3 specular_color = {1.0f, 0.0f, 1.0f};
 
     Spectrum3 get_albedo(glm::uvec2 uv) const {
         if (albedo != nullptr) {
@@ -46,29 +46,40 @@ struct Material {
         } else return Spectrum1();
     }
 
+    static const Material Light() {
+        return Material{{1, 1, 1}, {}, MaterialType::METALLIC_ROUGHNESS, nullptr,
+                        nullptr, nullptr, nullptr};
+    }
+
     static const Material new_mr_material(std::shared_ptr<HDRImage3> albedo,
                                           std::shared_ptr<HDRImage3> normal,
                                           std::shared_ptr<HDRImage1> metalness,
                                           std::shared_ptr<HDRImage1> roughness,
                                           float transparency = 0,
                                           float ior = 1.4f,
+                                          float fresnel = 1.0f,
                                           glm::vec3 specular_color = {1.0f, 1.0f, 1.0f}) {
         return Material{{}, {}, MaterialType::METALLIC_ROUGHNESS, albedo,
             normal, metalness, roughness, transparency, ior, 0.0f,
             specular_color};
     }
 
-    static const Material Light() {
-        return {{1, 1, 1}};
-    };
     static const Material Red() {
-        return {{}, {1, 0, 0}};
+        return Material::new_mr_material(0.0f, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+    };
+
+    static const Material RedMetal(float roughness = 0.0f) {
+        return Material::new_mr_material(1.0f, roughness, glm::vec3(1.0f, 0.0f, 0.0f));
     };
     static const Material Green() {
-        return {{}, {0, 1, 0}};
+        return Material::new_mr_material(0.0f, 0.0f, glm::vec3(0, 1, 0));
     };
     static const Material Blue() {
-        return {{}, {0, 0, 1}};
+        return Material::new_mr_material(0.0f, 0.0f, glm::vec3(0, 0, 1));
+    };
+
+    static const Material Black() {
+        return Material::new_mr_material(0.0f, 0.0f, glm::vec3(0, 0, 0));
     };
     static const Material Yellow() {
         return {{}, {1, 1, 0}};
@@ -86,10 +97,10 @@ struct Material {
         return {{}, {.5, .5, .5}};
     };
     static const Material Mirror() {
-        return {{}, {}, MaterialType ::SPECULAR};
+        return new_mr_material(1.0f, 0.0f, glm::vec3(1.0f, 1.0f, 1.0f), 0.0f, 1.32f);
     };
     static const Material Glass() {
-        return {{}, {}, MaterialType::REFRACTIVE};
+        return new_mr_material(0.0f, 0, glm::vec3(.0), 1.0f, 1.52f, 1.0f);
     };
     static const Material ReflectiveAndRefractive() {
         return {{}, {}, MaterialType::REFLECTIVE_AND_REFRACTIVE};
@@ -111,14 +122,15 @@ struct Material {
                         std::make_shared<HDRImage1>("scuffs_roughness.jpg")};
     }
 
-    static const Material new_mr_material(float metalness_value, float roughness_value, glm::vec3 color) {
+    static const Material new_mr_material(float metalness_value, float roughness_value, glm::vec3 color,
+                                          float transparency = 0, float ior = 1.4, float fresnel = 1.0f) {
         auto metalness = std::make_shared<HDRImage1>(1, 1);
         auto roughness = std::make_shared<HDRImage1>(1, 1);
         auto diffuse = std::make_shared<HDRImage3>(1, 1);
         metalness->set_pixel({metalness_value}, 0, 0);
         roughness->set_pixel({roughness_value}, 0, 0);
         diffuse->set_pixel(Spectrum3::from_vec(color), 0, 0);
-        return new_mr_material(diffuse, nullptr, metalness, roughness);
+        return new_mr_material(diffuse, nullptr, metalness, roughness, transparency, ior, fresnel);
 
     }
 

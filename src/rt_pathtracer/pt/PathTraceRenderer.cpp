@@ -159,7 +159,7 @@ glm::vec3 ggx_importance_sample(float roughness, glm::vec3 n) {
                    sin_theta * glm::sin(phi),
                    cos_theta};
 
-    glm::vec3 up = (glm::abs(n.z) < .999) ? glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(1.0f, 0.0f, 0.0f);
+    glm::vec3 up = (glm::abs(n.z) > .999) ? glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(1.0f, 0.0f, 0.0f);
     glm::vec3 tangent_x = glm::normalize(glm::cross(up, n));
     glm::vec3 tangent_y = glm::cross(n, tangent_x);
     return tangent_x * h.x + tangent_y * h.y + n * h.z;
@@ -180,10 +180,12 @@ Spectrum3 PathTraceRenderer::trace_ray(const Ray &ray, unsigned int depth) const
 
         if (m->type == MaterialType::METALLIC_ROUGHNESS) {
             auto metalness = m->get_metalness(hit.uv)[0];
+
             if (glm::linearRand(0.0f, 1.0f) < metalness) {
                 glm::vec3 v = -ray.direction;
                 float roughness = m->get_roughness(hit.uv)[0];
                 glm::vec3 half_vector = ggx_importance_sample(roughness, n);
+                half_vector = glm::dot(ray.direction, half_vector) < 0 ? half_vector : -half_vector;
                 glm::vec3 l = 2.0f * glm::max(glm::dot(v, half_vector), 0.0f) * half_vector - v;
 
                 float NoV = glm::max(glm::dot(n, v), 0.0f);
@@ -191,35 +193,84 @@ Spectrum3 PathTraceRenderer::trace_ray(const Ray &ray, unsigned int depth) const
                 float NoH = glm::max(glm::dot(n, half_vector), 0.0f);
                 float VoH = glm::max(glm::dot(v, half_vector), 0.0f);
 
-                float G = ggx_geometric_occlusion(NoL, NoV, roughness);
-                float Fc = glm::pow(1.0f - VoH, 5.0f);
-                glm::vec3 F = (1 - Fc) * m->specular_color + Fc;
-                Ray next = Ray{hit.position, l};
-                color += trace_ray(next, depth - 1)
-                         * F * G * VoH / ((NoH * NoV) + .05);
-            } else {
-                float reflection = fresnel(ray.direction, n, m->ior);
-                if (glm::linearRand(0.0f, 1.0f) < reflection) {
-                    glm::vec3 reflected = glm::reflect(ray.direction, hit.normal);
-                    Ray reflectedRay{hit.position, reflected};
-                    color += trace_ray(reflectedRay, depth - 1); // * m->specular_color;
+                if (NoL > 0) {
+                    float G = ggx_geometric_occlusion(NoL, NoV, roughness);
+                    float Fc = glm::pow(1.0f - VoH, 5.0f);
+                    glm::vec3 F = (1 - Fc) * m->specular_color + Fc;
+                    Ray next = Ray{hit.position, l};
+                    color += trace_ray(next, depth - 1)
+                             * F * G * VoH / (NoH * NoV);
                 } else {
-                    float transparency = m->transparency;
-                    if (glm::linearRand(0.0f, 1.0f) < transparency) {
-                        float cosa = glm::dot(hit.position, n);
-                        glm::vec3 normal = cosa < 0 ? n : -n;
-                        float ior = cosa < 0 ? 1 / m->ior : m->ior;
-                        glm::vec3 refraction = glm::refract(ray.direction, n, ior);
+                    glm::vec3 reflection = reflect(ray.direction, hit.normal);
+                    color += trace_ray(Ray{hit.position, reflection}, depth - 1);
+                }
+            } else {
+                float reflected = m->fresnel * fresnel(ray.direction, n, m->ior);
+                if (glm::linearRand(0.0f, 1.0f) < reflected) {
+                    glm::vec3 diffuse = CosineSampleHemisphere(hit.normal);
+                    glm::vec3 reflection = reflect(ray.direction, hit.normal);
+                    Ray reflectedRay{hit.position + n * (float) DELTA, reflection};
+                    color += trace_ray(reflectedRay, depth - 1);
+                } else {
+                    if (glm::linearRand(0.0f, 1.0f) < m->transparency) {
+                        glm::vec3 normal = glm::dot(ray.direction, hit.normal) < 0 ? hit.normal : -hit.normal;
+                        float r_index = glm::dot(ray.direction, hit.normal) < 0 ? 1 / m->ior : m->ior;
+
+                        glm::vec3 refraction = glm::refract(ray.direction, normal, r_index);
                         Ray refractionRay{hit.position - normal * (float) DELTA, refraction};
-                        color += trace_ray(refractionRay, depth - 1);
+                        glm::vec3 refractionColor = glm::lerp(hit.material->get_albedo(hit.uv).to_vec3(),
+                                                              glm::vec3{1, 1, 1},
+                                                              m->transparency);
+                        color += trace_ray(refractionRay, depth - 1) * refractionColor;
                     } else {
                         glm::vec3 albedo = m->get_albedo(hit.uv).to_vec3();
                         glm::vec3 diffuse = CosineSampleHemisphere(hit.normal);
-                        Ray diffuseRay{hit.position, diffuse};
+                        Ray diffuseRay{hit.position + n * (float) DELTA, diffuse};
                         color += trace_ray(diffuseRay, depth - 1) * albedo;
                     }
                 }
             }
+//            auto metalness = m->get_metalness(hit.uv)[0];
+//            if (glm::linearRand(0.0f, 1.0f) < metalness) {
+//                glm::vec3 v = -ray.direction;
+//                float roughness = m->get_roughness(hit.uv)[0];
+//                glm::vec3 half_vector = ggx_importance_sample(roughness, n);
+//                glm::vec3 l = 2.0f * glm::max(glm::dot(v, half_vector), 0.0f) * half_vector - v;
+//
+//                float NoV = glm::max(glm::dot(n, v), 0.0f);
+//                float NoL = glm::max(glm::dot(n, l), 0.0f);
+//                float NoH = glm::max(glm::dot(n, half_vector), 0.0f);
+//                float VoH = glm::max(glm::dot(v, half_vector), 0.0f);
+//
+//                float G = ggx_geometric_occlusion(NoL, NoV, roughness);
+//                float Fc = glm::pow(1.0f - VoH, 5.0f);
+//                glm::vec3 F = (1 - Fc) * m->specular_color + Fc;
+//                Ray next = Ray{hit.position, l};
+//                color += trace_ray(next, depth - 1)
+//                         * F * G * VoH / ((NoH * NoV));
+//            } else {
+//                float reflection = fresnel(-ray.direction, n, m->ior);
+//                if (glm::linearRand(0.0f, 1.0f) < reflection) {
+//                    glm::vec3 reflected = glm::reflect(ray.direction, hit.normal);
+//                    Ray reflectedRay{hit.position, reflected};
+//                    color += trace_ray(reflectedRay, depth - 1); // * m->specular_color;
+//                } else {
+//                    float transparency = m->transparency;
+//                    if (glm::linearRand(0.0f, 1.0f) < transparency) {
+//                        float cosa = glm::dot(hit.position, n);
+//                        glm::vec3 normal = cosa < 0 ? n : -n;
+//                        float ior = cosa < 0 ? 1 / m->ior : m->ior;
+//                        glm::vec3 refraction = glm::refract(ray.direction, n, ior);
+//                        Ray refractionRay{hit.position - normal * (float) DELTA, refraction};
+//                        color += trace_ray(refractionRay, depth - 1);
+//                    } else {
+//                        glm::vec3 albedo = m->get_albedo(hit.uv).to_vec3();
+//                        glm::vec3 diffuse = CosineSampleHemisphere(hit.normal);
+//                        Ray diffuseRay{hit.position, diffuse};
+//                        color += trace_ray(diffuseRay, depth - 1) * albedo;
+//                    }
+//                }
+//            }
         }
 
 

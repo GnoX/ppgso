@@ -30,7 +30,7 @@ Intersection Triangle::intersect(const Ray &ray) const {
     if (t > EPS) {
         glm::vec3 pt = ray.point(t);
         glm::vec3 n = glm::normalize(glm::cross(v01, v02));
-        return {t, pt, n, &material};
+        return {t, pt, n, &material, get_uv(pt)};
     } else {
         return noHit;
     }
@@ -40,7 +40,8 @@ AABB Triangle::get_bbox() const {
     return {glm::min(glm::min(v0, v1), v2), glm::max(glm::max(v0, v1), v2)};
 }
 
+// TODO
 glm::uvec2 Triangle::get_uv(glm::vec3 point) const {
-    return glm::uvec2();
+    return glm::uvec2(0.0f, 0.0f);
 }
 }}

@@ -35,7 +35,7 @@ public:
     PathTraceRenderer(unsigned width, unsigned height, unsigned num_threads = 4,
                       const std::string &environment_map_path = "");
 
-    float focal_length = 1.2;
+    float focal_length = 3.2;
     float dof_complexity = 0;
     float dispersion = .10f;
 
@@ -61,6 +61,7 @@ private:
     unsigned width;
     unsigned height;
     unsigned tileSize;
+    unsigned max_depth = 5;
 
     std::vector<Work> work_blocks;
 
